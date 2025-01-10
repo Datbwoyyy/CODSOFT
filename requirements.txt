@@ -1,9 +1,8 @@
-
-torch==2.2.0
-torchvision==0.15.0
-transformers==4.26.1
-datasets==2.8.0
-pillow==9.0.0
-pycocotools==2.0.6
-requests==2.28.1
-streamlit==1.15.2
+torch==*
+torchvision==*
+transformers==*
+datasets==*
+pillow==*
+pycocotools==*
+requests==*
+streamlit==*
