@@ -64,13 +64,20 @@ if uploaded_file:
         # Run inference
         interpreter.invoke()
 
-        # Get predictions
-        predictions = interpreter.get_tensor(output_details[0]['index'])
-        predicted_label = class_names[np.argmax(predictions)]
-
-        # Draw face box
+        # Predict
+        predictions = model.predict(face)
+        print("Predictions:", predictions)  # Debugging line
+        predicted_index = np.argmax(predictions)
+        
+        if predicted_index < len(class_names):
+            predicted_label = class_names[predicted_index]
+        else:
+            predicted_label = "Unknown"  # Handle unexpected indices
+        
+        # Draw face box and label
         cv2.rectangle(image, (x, y), (x + w, y + h), (255, 0, 0), 2)
         cv2.putText(image, predicted_label, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 0, 0), 2)
+
 
     # Door animation
     if predicted_label in ["Barack Obama", "George Bush"]:
