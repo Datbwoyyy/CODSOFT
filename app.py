@@ -1,8 +1,8 @@
-import streamlit as st
-from PIL import Image
-import cv2
+from sklearn.decomposition import PCA
 import numpy as np
 import tensorflow as tf
+import cv2
+from PIL import Image
 import requests
 from io import BytesIO
 from scipy.spatial.distance import euclidean
@@ -24,9 +24,18 @@ def load_embedding(url):
 obama_embedding = load_embedding(obama_url)
 bush_embedding = load_embedding(bush_url)
 
+# Function to resize embeddings to a target size
+def resize_embedding(embedding, target_size=2048):
+    # Apply PCA to reduce the dimensionality to the target size
+    pca = PCA(n_components=target_size)
+    embedding_resized = pca.fit_transform(embedding.reshape(1, -1)).flatten()
+    return embedding_resized
+
 # Function to calculate the Euclidean distance between two embeddings
 def compare_embeddings(embedding1, embedding2):
-    return euclidean(embedding1, embedding2)
+    embedding1_resized = resize_embedding(embedding1)
+    embedding2_resized = resize_embedding(embedding2)
+    return euclidean(embedding1_resized, embedding2_resized)
 
 # Load TFLite model
 interpreter = tf.lite.Interpreter(model_path='face_recognition_model.tflite')
@@ -118,4 +127,3 @@ if uploaded_file:
 
     # Display image with annotations
     st.image(image, caption="Processed Image", use_column_width=True)
-
