@@ -80,7 +80,7 @@ if uploaded_file:
 
     # Display image with annotations
     st.image(image, caption="Processed Image", use_column_width=True)
-'''
+
 
 # Save the app code to a file
 with open("app.py", "w") as file:
