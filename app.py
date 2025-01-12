@@ -1,4 +1,3 @@
-
 import streamlit as st
 from PIL import Image
 import cv2
@@ -8,8 +7,13 @@ import tensorflow as tf
 # Load Haar cascade
 face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 
-# Load trained model
-model = tf.keras.models.load_model('face_recognition_model.keras')
+# Load TFLite model
+interpreter = tf.lite.Interpreter(model_path='face_recognition_model.tflite')
+interpreter.allocate_tensors()
+
+# Get input and output details
+input_details = interpreter.get_input_details()
+output_details = interpreter.get_output_details()
 
 # Class labels
 class_names = ['Barack Obama', 'George Bush', 'Other']
@@ -52,10 +56,16 @@ if uploaded_file:
         # Crop and preprocess face
         face = image[y:y + h, x:x + w]
         face = cv2.resize(face, (299, 299))  # Inception V3 input size
-        face = np.expand_dims(face, axis=0) / 255.0
+        face = np.expand_dims(face, axis=0).astype(np.float32) / 255.0
 
-        # Predict
-        predictions = model.predict(face)
+        # Set the input tensor
+        interpreter.set_tensor(input_details[0]['index'], face)
+
+        # Run inference
+        interpreter.invoke()
+
+        # Get predictions
+        predictions = interpreter.get_tensor(output_details[0]['index'])
         predicted_label = class_names[np.argmax(predictions)]
 
         # Draw face box
@@ -70,3 +80,8 @@ if uploaded_file:
 
     # Display image with annotations
     st.image(image, caption="Processed Image", use_column_width=True)
+'''
+
+# Save the app code to a file
+with open("app.py", "w") as file:
+    file.write(app_code)
