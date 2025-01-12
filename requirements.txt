@@ -7,3 +7,5 @@ deepface
 scipy
 requests
 scikit-learn
+libgl1
+
