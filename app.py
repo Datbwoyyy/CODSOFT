@@ -13,9 +13,19 @@ face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_fronta
 obama_url = "https://raw.githubusercontent.com/Datbwoyyy/CODSOFT/main/obama_embedding.npy"
 bush_url = "https://raw.githubusercontent.com/Datbwoyyy/CODSOFT/main/bush_embedding.npy"
 
+# Load Obama and Bush embeddings from GitHub
+obama_url = "https://raw.githubusercontent.com/Datbwoyyy/CODSOFT/main/obama_embedding.npy"
+bush_url = "https://raw.githubusercontent.com/Datbwoyyy/CODSOFT/main/bush_embedding.npy"
+
+# Function to load embeddings from the URL
+def load_embedding(url):
+    response = requests.get(url)
+    response.raise_for_status()  # Raise an exception for 4xx/5xx responses
+    return np.load(BytesIO(response.content))
+
 # Load embeddings
-obama_embedding = np.load(requests.get(obama_url, allow_redirects=True).content)
-bush_embedding = np.load(requests.get(bush_url, allow_redirects=True).content)
+obama_embedding = load_embedding(obama_url)
+bush_embedding = load_embedding(bush_url)
 
 # Function to calculate the Euclidean distance between two embeddings
 def compare_embeddings(embedding1, embedding2):
