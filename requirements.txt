@@ -7,4 +7,4 @@ face_recognition
 scipy
 requests
 scikit-learn
-
+cmake
