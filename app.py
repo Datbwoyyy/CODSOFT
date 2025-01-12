@@ -10,8 +10,8 @@ from io import BytesIO
 face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 
 # Download Obama and Bush embeddings from GitHub (or other remote storage)
-obama_url = "https://raw.githubusercontent.com/Datbwoyyy/CODSOFT/main/embeddings/obama_embedding.npy"
-bush_url = "https://raw.githubusercontent.com/Datbwoyyy/CODSOFT/main/embeddings/bush_embedding.npy"
+obama_url = "https://raw.githubusercontent.com/Datbwoyyy/CODSOFT/main/obama_embedding.npy"
+bush_url = "https://raw.githubusercontent.com/Datbwoyyy/CODSOFT/main/bush_embedding.npy"
 
 # Load embeddings
 obama_embedding = np.load(requests.get(obama_url, allow_redirects=True).content)
