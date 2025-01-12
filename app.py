@@ -63,10 +63,10 @@ if uploaded_file:
         cv2.putText(image, predicted_label, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 0, 0), 2)
 
     # Logic for opening or closing the door based on recognized person
-    if predicted_label in ["Barack Obama", "George Bush"]:
+    if predicted_label == "Barack Obama" or predicted_label == "George Bush":
         st.image(draw_door(opened=True))  # Open the door for Obama or Bush
     else:
-        st.image(draw_door(opened=False))  # Close the door for everyone else
+        st.image(draw_door(opened=False))  # Close the door for everyone else (including LFW faces)
 
     # Display image with annotations
     st.image(image, caption="Processed Image", use_column_width=True)
