@@ -1,9 +1,8 @@
 import streamlit as st
 from PIL import Image
-import cv2
 import numpy as np
-from deepface import DeepFace
-from io import BytesIO
+import face_recognition
+import cv2
 
 # Door animation
 def draw_door(opened):
@@ -35,33 +34,44 @@ if uploaded_file:
     # Read the uploaded image
     image = Image.open(uploaded_file)
     image_array = np.array(image)
-    
-    # Convert the image to grayscale for face detection
-    gray = cv2.cvtColor(image_array, cv2.COLOR_BGR2GRAY)
 
-    # Load Haar cascade for face detection
-    face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+    # Convert the image to RGB (face_recognition needs RGB format)
+    image_rgb = image_array[:, :, ::-1]  # Convert BGR to RGB
 
-    # Detect faces in the image
-    faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5)
+    # Find all face locations in the image
+    face_locations = face_recognition.face_locations(image_rgb)
+
+    # Find face encodings for the faces in the image
+    face_encodings = face_recognition.face_encodings(image_rgb, face_locations)
 
     # Initialize predicted label
     predicted_label = "Unknown"
 
-    for (x, y, w, h) in faces:
-        # Crop the face from the image
-        face = image_array[y:y + h, x:x + w]
-        
-        # Use DeepFace to find the closest match
-        result = DeepFace.find(img_path=face, db_path='path_to_faces_db', model_name='VGG-Face')
+    # Load images of known people from GitHub (raw URLs)
+    obama_image = face_recognition.load_image_file("https://raw.githubusercontent.com/Datbwoyyy/CODSOFT/main/path_to_faces_db/President_Barack_Obama.jpg")
+    bush_image = face_recognition.load_image_file("https://raw.githubusercontent.com/Datbwoyyy/CODSOFT/main/path_to_faces_db/George-W-Bush.jpeg")
 
-        if len(result) > 0:
-            # If the model finds a match, determine the label
-            predicted_label = result[0]['identity'][0].split("/")[-1]  # Getting the name from the result file path
+    # Encode the faces
+    obama_encoding = face_recognition.face_encodings(obama_image)[0]
+    bush_encoding = face_recognition.face_encodings(bush_image)[0]
+    
+    # List of known face encodings
+    known_face_encodings = [obama_encoding, bush_encoding]
+    known_face_names = ["Barack Obama", "George Bush"]
+
+    # Loop through each face found in the image
+    for (top, right, bottom, left), face_encoding in zip(face_locations, face_encodings):
+        # Compare the detected face encoding to the known encodings
+        matches = face_recognition.compare_faces(known_face_encodings, face_encoding)
+
+        # If a match is found, assign the predicted label
+        if True in matches:
+            first_match_index = matches.index(True)
+            predicted_label = known_face_names[first_match_index]
 
         # Draw face box and label
-        cv2.rectangle(image_array, (x, y), (x + w, y + h), (255, 0, 0), 2)
-        cv2.putText(image_array, predicted_label, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 0, 0), 2)
+        cv2.rectangle(image_array, (left, top), (right, bottom), (255, 0, 0), 2)
+        cv2.putText(image_array, predicted_label, (left, top - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 0, 0), 2)
 
     # Door animation based on face recognition
     if predicted_label in ["Barack Obama", "George Bush"]:
