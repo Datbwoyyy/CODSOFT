@@ -3,3 +3,5 @@ tensorflow
 opencv-python-headless
 pillow
 numpy
+scikit-learn
+requests
