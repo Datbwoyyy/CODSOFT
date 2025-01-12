@@ -5,37 +5,28 @@ import numpy as np
 import tensorflow as tf
 import requests
 from io import BytesIO
-from sklearn.decomposition import PCA
+from scipy.spatial.distance import euclidean
 
 # Load Haar cascade for face detection
 face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 
-# Download Obama and Bush embeddings from GitHub (or other remote storage)
+# Download Obama and Bush embeddings from GitHub
 obama_url = "https://raw.githubusercontent.com/Datbwoyyy/CODSOFT/main/obama_embedding.npy"
 bush_url = "https://raw.githubusercontent.com/Datbwoyyy/CODSOFT/main/bush_embedding.npy"
 
-# Function to load embeddings from the URL
+# Function to load embeddings from a URL
 def load_embedding(url):
     response = requests.get(url)
-    response.raise_for_status()  # Raise an exception for 4xx/5xx responses
+    response.raise_for_status()  # Raise an exception for bad responses
     return np.load(BytesIO(response.content))
 
 # Load Obama and Bush embeddings
 obama_embedding = load_embedding(obama_url)
 bush_embedding = load_embedding(bush_url)
 
-# Function to resize embeddings to a target size using PCA
-def resize_embedding(embedding, target_dim=2048):
-    if len(embedding) != target_dim:
-        pca = PCA(n_components=target_dim)
-        embedding = pca.fit_transform(embedding.reshape(1, -1)).flatten()  # Reshaping and applying PCA
-    return embedding
-
 # Function to calculate the Euclidean distance between two embeddings
 def compare_embeddings(embedding1, embedding2):
-    embedding1 = resize_embedding(embedding1)  # Ensure embeddings are of the same size
-    embedding2 = resize_embedding(embedding2)
-    return np.linalg.norm(embedding1 - embedding2)
+    return euclidean(embedding1, embedding2)
 
 # Load TFLite model
 interpreter = tf.lite.Interpreter(model_path='face_recognition_model.tflite')
@@ -82,6 +73,9 @@ if uploaded_file:
     # Detect faces
     faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5)
 
+    # Initialize predicted label variable
+    predicted_label = "Unknown"
+
     for (x, y, w, h) in faces:
         # Crop and preprocess face
         face = image[y:y + h, x:x + w]
@@ -124,3 +118,4 @@ if uploaded_file:
 
     # Display image with annotations
     st.image(image, caption="Processed Image", use_column_width=True)
+
