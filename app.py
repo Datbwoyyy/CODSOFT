@@ -5,15 +5,12 @@ import numpy as np
 import tensorflow as tf
 import requests
 from io import BytesIO
+from sklearn.decomposition import PCA
 
 # Load Haar cascade for face detection
 face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 
 # Download Obama and Bush embeddings from GitHub (or other remote storage)
-obama_url = "https://raw.githubusercontent.com/Datbwoyyy/CODSOFT/main/obama_embedding.npy"
-bush_url = "https://raw.githubusercontent.com/Datbwoyyy/CODSOFT/main/bush_embedding.npy"
-
-# Load Obama and Bush embeddings from GitHub
 obama_url = "https://raw.githubusercontent.com/Datbwoyyy/CODSOFT/main/obama_embedding.npy"
 bush_url = "https://raw.githubusercontent.com/Datbwoyyy/CODSOFT/main/bush_embedding.npy"
 
@@ -23,12 +20,21 @@ def load_embedding(url):
     response.raise_for_status()  # Raise an exception for 4xx/5xx responses
     return np.load(BytesIO(response.content))
 
-# Load embeddings
+# Load Obama and Bush embeddings
 obama_embedding = load_embedding(obama_url)
 bush_embedding = load_embedding(bush_url)
 
+# Function to resize embeddings to a target size using PCA
+def resize_embedding(embedding, target_dim=2048):
+    if len(embedding) != target_dim:
+        pca = PCA(n_components=target_dim)
+        embedding = pca.fit_transform(embedding.reshape(1, -1)).flatten()  # Reshaping and applying PCA
+    return embedding
+
 # Function to calculate the Euclidean distance between two embeddings
 def compare_embeddings(embedding1, embedding2):
+    embedding1 = resize_embedding(embedding1)  # Ensure embeddings are of the same size
+    embedding2 = resize_embedding(embedding2)
     return np.linalg.norm(embedding1 - embedding2)
 
 # Load TFLite model
