@@ -14,8 +14,8 @@ obama_url = "https://raw.githubusercontent.com/Datbwoyyy/CODSOFT/main/embeddings
 bush_url = "https://raw.githubusercontent.com/Datbwoyyy/CODSOFT/main/embeddings/bush_embedding.npy"
 
 # Load embeddings
-obama_embedding = np.load(requests.get(obama_url, allow_redirects=True).content)
-bush_embedding = np.load(requests.get(bush_url, allow_redirects=True).content)
+obama_embedding = np.load(BytesIO(requests.get(obama_url, allow_redirects=True).content))
+bush_embedding = np.load(BytesIO(requests.get(bush_url, allow_redirects=True).content))
 
 # Function to calculate the Euclidean distance between two embeddings
 def compare_embeddings(embedding1, embedding2):
@@ -66,45 +66,48 @@ if uploaded_file:
     # Detect faces
     faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5)
 
-    for (x, y, w, h) in faces:
-        # Crop and preprocess face
-        face = image[y:y + h, x:x + w]
-        face = cv2.resize(face, (299, 299))  # Inception V3 input size
-        face = np.expand_dims(face, axis=0).astype(np.float32) / 255.0
-
-        # Set the input tensor
-        interpreter.set_tensor(input_details[0]['index'], face)
-
-        # Run inference
-        interpreter.invoke()
-
-        # Get model output
-        predictions = interpreter.get_tensor(output_details[0]['index'])
-
-        # Compare embeddings for prediction
-        predicted_embedding = predictions[0]  # Assuming predictions are embeddings
-
-        # Calculate Euclidean distance to Obama and Bush embeddings
-        obama_distance = compare_embeddings(predicted_embedding, obama_embedding)
-        bush_distance = compare_embeddings(predicted_embedding, bush_embedding)
-
-        # Determine if it's Obama or Bush
-        if obama_distance < bush_distance:
-            predicted_label = "Barack Obama"
-        elif bush_distance < obama_distance:
-            predicted_label = "George Bush"
-        else:
-            predicted_label = "Unknown"
-
-        # Draw face box and label
-        cv2.rectangle(image, (x, y), (x + w, y + h), (255, 0, 0), 2)
-        cv2.putText(image, predicted_label, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 0, 0), 2)
-
-    # Door animation
-    if predicted_label in ["Barack Obama", "George Bush"]:
-        st.image(draw_door(opened=True))
+    if len(faces) == 0:
+        st.warning("No faces detected in the image.")
     else:
-        st.image(draw_door(opened=False))
+        for (x, y, w, h) in faces:
+            # Crop and preprocess face
+            face = image[y:y + h, x:x + w]
+            face = cv2.resize(face, (299, 299))  # Inception V3 input size
+            face = np.expand_dims(face, axis=0).astype(np.float32) / 255.0
 
-    # Display image with annotations
-    st.image(image, caption="Processed Image", use_column_width=True)
+            # Set the input tensor
+            interpreter.set_tensor(input_details[0]['index'], face)
+
+            # Run inference
+            interpreter.invoke()
+
+            # Get model output
+            predictions = interpreter.get_tensor(output_details[0]['index'])
+
+            # Compare embeddings for prediction
+            predicted_embedding = predictions[0]  # Assuming predictions are embeddings
+
+            # Calculate Euclidean distance to Obama and Bush embeddings
+            obama_distance = compare_embeddings(predicted_embedding, obama_embedding)
+            bush_distance = compare_embeddings(predicted_embedding, bush_embedding)
+
+            # Determine if it's Obama or Bush
+            if obama_distance < bush_distance:
+                predicted_label = "Barack Obama"
+            elif bush_distance < obama_distance:
+                predicted_label = "George Bush"
+            else:
+                predicted_label = "Unknown"
+
+            # Draw face box and label
+            cv2.rectangle(image, (x, y), (x + w, y + h), (255, 0, 0), 2)
+            cv2.putText(image, predicted_label, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 0, 0), 2)
+
+        # Door animation
+        if predicted_label in ["Barack Obama", "George Bush"]:
+            st.image(draw_door(opened=True))
+        else:
+            st.image(draw_door(opened=False))
+
+        # Display image with annotations
+        st.image(image, caption="Processed Image", use_column_width=True)
