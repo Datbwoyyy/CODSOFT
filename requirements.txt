@@ -3,7 +3,8 @@ opencv-python-headless
 numpy
 Pillow
 tensorflow
-deepface
+face_recognition
 scipy
 requests
 scikit-learn
+
