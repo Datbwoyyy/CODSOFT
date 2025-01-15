@@ -1,113 +1,113 @@
-import streamlit as st
-from PIL import Image
+import tkinter as tk
+from tkinter import filedialog
+from PIL import Image, ImageTk
 import cv2
 import numpy as np
 import tensorflow as tf
-import requests
-from io import BytesIO
+import os
 
-# Load Haar cascade for face detection
+# Suppress TensorFlow warnings
+os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
+
+# Load Haar Cascade model for face detection
 face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 
-# Download Obama and Bush embeddings from GitHub (or other remote storage)
-obama_url = "https://raw.githubusercontent.com/Datbwoyyy/CODSOFT/main/embeddings/obama_embedding.npy"
-bush_url = "https://raw.githubusercontent.com/Datbwoyyy/CODSOFT/main/embeddings/bush_embedding.npy"
+# Load FaceNet model
+model_path = r"C:\Users\HP\Desktop\Codsoft\TASK 5- Face Detection And Recognition"
+model = tf.saved_model.load(model_path)  # Ensure this path points to the correct folder
+inference_fn = model.signatures["serving_default"]
 
-# Load embeddings
-obama_embedding = np.load(BytesIO(requests.get(obama_url, allow_redirects=True).content))
-bush_embedding = np.load(BytesIO(requests.get(bush_url, allow_redirects=True).content))
+# Load known embeddings (update paths as needed)
+obama_embeddings = np.load(r"C:\Users\HP\Desktop\Codsoft\TASK 5- Face Detection And Recognition\embeddings\obama_embedding.npy", allow_pickle=True)
+george_bush_embeddings = np.load(r"C:\Users\HP\Desktop\Codsoft\TASK 5- Face Detection And Recognition\embeddings\george_bush_embedding.npy", allow_pickle=True)
 
-# Function to calculate the Euclidean distance between two embeddings
-def compare_embeddings(embedding1, embedding2):
-    return np.linalg.norm(embedding1 - embedding2)
+known_embeddings = {
+    "Barack Obama": obama_embeddings,
+    "George Bush": george_bush_embeddings,
+}
 
-# Load TFLite model
-interpreter = tf.lite.Interpreter(model_path='face_recognition_model.tflite')
-interpreter.allocate_tensors()
+# Functions for face recognition
+def preprocess_image(image):
+    image = cv2.resize(image, (160, 160))
+    image = (image - 127.5) / 128.0
+    return np.expand_dims(image, axis=0)
 
-# Get input and output details
-input_details = interpreter.get_input_details()
-output_details = interpreter.get_output_details()
+def euclidean_distance(emb1, emb2):
+    return np.linalg.norm(emb1 - emb2)
 
-# Class labels (this could also be dynamically fetched from the model)
-class_names = ['Barack Obama', 'George Bush', 'Other']
-
-# Door animation
-def draw_door(opened):
-    from PIL import Image, ImageDraw
-    img = Image.new("RGB", (500, 300), "white")
-    draw = ImageDraw.Draw(img)
-
-    # Door frame
-    draw.rectangle([50, 50, 450, 250], outline="black", width=5)
-
-    if opened:
-        # Door open
-        draw.rectangle([300, 50, 450, 250], fill="white")
-        text = "Door Open"
-    else:
-        # Door closed
-        draw.rectangle([50, 50, 450, 250], fill="brown")
-        text = "Door Closed"
-
-    draw.text((200, 270), text, fill="black")
-    return img
-
-st.title("Face Recognition Door System")
-
-# Upload an image
-uploaded_file = st.file_uploader("Upload an image", type=["jpg", "png", "jpeg"])
-
-if uploaded_file:
-    # Read image
-    image = np.array(Image.open(uploaded_file))
+def detect_faces(image):
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
+    return faces
 
-    # Detect faces
-    faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5)
+def get_embeddings(face_image):
+    preprocessed_image = preprocess_image(face_image)
+    embeddings = inference_fn(tf.constant(preprocessed_image, dtype=tf.float32))["Bottleneck_BatchNorm"].numpy()
+    return embeddings
 
+def recognize_face(image):
+    faces = detect_faces(image)
     if len(faces) == 0:
-        st.warning("No faces detected in the image.")
+        return None, "No face detected!"
+
+    for (x, y, w, h) in faces:
+        face = image[y:y+h, x:x+w]
+        embeddings = get_embeddings(face)
+
+        threshold = 12
+        for name, known_emb in known_embeddings.items():
+            distance = euclidean_distance(embeddings, known_emb)
+            if distance < threshold:
+                return name, f"Match found: {name}"
+
+    return None, "No match found!"
+
+# Tkinter GUI
+def upload_and_recognize():
+    global panel, door_label
+
+    file_path = filedialog.askopenfilename(filetypes=[("Image Files", "*.jpg;*.jpeg;*.png")])
+    if not file_path:
+        return
+
+    image = cv2.imread(file_path)
+    image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    image_pil = Image.fromarray(image_rgb)
+    img_tk = ImageTk.PhotoImage(image_pil)
+    
+    panel.config(image=img_tk)
+    panel.image = img_tk
+
+    name, result = recognize_face(image)
+    result_label.config(text=result)
+
+    if name:
+        door_label.config(image=door_open_img)
+        door_label.image = door_open_img
     else:
-        for (x, y, w, h) in faces:
-            # Crop and preprocess face
-            face = image[y:y + h, x:x + w]
-            face = cv2.resize(face, (299, 299))  # Inception V3 input size
-            face = np.expand_dims(face, axis=0).astype(np.float32) / 255.0
+        door_label.config(image=door_closed_img)
+        door_label.image = door_closed_img
 
-            # Set the input tensor
-            interpreter.set_tensor(input_details[0]['index'], face)
+# Main Tkinter Window
+root = tk.Tk()
+root.title("Face Recognition - Door Opener")
 
-            # Run inference
-            interpreter.invoke()
+upload_button = tk.Button(root, text="Upload Image", command=upload_and_recognize)
+upload_button.pack()
 
-            # Get model output
-            predictions = interpreter.get_tensor(output_details[0]['index'])
+panel = tk.Label(root)
+panel.pack()
 
-            # Compare embeddings for prediction
-            predicted_embedding = predictions[0]  # Assuming predictions are embeddings
+result_label = tk.Label(root, text="", font=("Helvetica", 16))
+result_label.pack()
 
-            # Calculate Euclidean distance to Obama and Bush embeddings
-            obama_distance = compare_embeddings(predicted_embedding, obama_embedding)
-            bush_distance = compare_embeddings(predicted_embedding, bush_embedding)
+# Load door images
+door_open_img = ImageTk.PhotoImage(Image.open("images/door_opened.jpg").resize((200, 400)))
+door_closed_img = ImageTk.PhotoImage(Image.open("images/door_closed.jpg").resize((200, 400)))
 
-            # Determine if it's Obama or Bush
-            if obama_distance < bush_distance:
-                predicted_label = "Barack Obama"
-            elif bush_distance < obama_distance:
-                predicted_label = "George Bush"
-            else:
-                predicted_label = "Unknown"
+door_label = tk.Label(root, image=door_closed_img)
+door_label.pack()
 
-            # Draw face box and label
-            cv2.rectangle(image, (x, y), (x + w, y + h), (255, 0, 0), 2)
-            cv2.putText(image, predicted_label, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 0, 0), 2)
-
-        # Door animation
-        if predicted_label in ["Barack Obama", "George Bush"]:
-            st.image(draw_door(opened=True))
-        else:
-            st.image(draw_door(opened=False))
-
-        # Display image with annotations
-        st.image(image, caption="Processed Image", use_column_width=True)
+# Start Tkinter loop
+root.mainloop()
