@@ -2,10 +2,10 @@ import streamlit as st
 import pandas as pd
 from sklearn.metrics.pairwise import cosine_similarity
 
-# Load the dataset
+# Streaming the dataset
 df = pd.read_csv("http://files.grouplens.org/datasets/movielens/ml-100k/u.data", sep='	', names=["user_id", "item_id", "rating", "timestamp"])
 
-# Load the movie titles
+# Streaming the movie titles
 movie_titles = pd.read_csv("http://files.grouplens.org/datasets/movielens/ml-100k/u.item", sep='|', encoding='latin-1', usecols=[0, 1], names=["item_id", "title"])
 
 # Merge the ratings and titles
