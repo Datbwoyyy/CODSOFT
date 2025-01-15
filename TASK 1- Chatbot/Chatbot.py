@@ -35,7 +35,7 @@ def send_message():
 root = tk.Tk()
 root.title("Simple Chatbot")
 
-# Create a Chat log
+# Creating a Chat log
 chat_log = tk.Text(root, bg="lightgray", height=20, width=50)
 chat_log.pack(pady=10)
 
@@ -43,7 +43,7 @@ chat_log.pack(pady=10)
 entry = tk.Entry(root, width=40)
 entry.pack(pady=5)
 
-# Create a send Button
+# Creating a send Button
 send_button = tk.Button(root, text="Send", command=send_message)
 send_button.pack(pady=5)
 
