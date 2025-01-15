@@ -15,7 +15,7 @@ This project is a **simple chatbot application** with a **Graphical User Interfa
 
 ## 📂 **Project Structure**
 ```
-├── chatbot_gui.py      # Main Python file containing the chatbot logic and GUI code
+├── chatbot.py      # Main Python file containing the chatbot logic and GUI code
 └── README.md          # Documentation file (this file)
 ```
 
