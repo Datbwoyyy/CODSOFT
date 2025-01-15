@@ -1,3 +1,4 @@
+### Importing Libraries dependenices 
 import tkinter as tk
 from tkinter import filedialog
 from PIL import Image, ImageTk
@@ -6,19 +7,19 @@ import numpy as np
 import tensorflow as tf
 import os
 
-# Suppress TensorFlow warnings
+# Suppressing TensorFlow warnings(For tkinter)
 os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 
-# Load Haar Cascade model for face detection
+# Streaming the Haar Cascade model for face detection
 face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 
-# Load FaceNet model
+# Loading and streaming FaceNet model
 model_path = r"C:\Users\HP\Desktop\Codsoft\TASK 5- Face Detection And Recognition"
 model = tf.saved_model.load(model_path)  # Ensure this path points to the correct folder
 inference_fn = model.signatures["serving_default"]
 
-# Load known embeddings (update paths as needed)
+# Loading the known Generated embeddings (update paths as needed)
 obama_embeddings = np.load(r"C:\Users\HP\Desktop\Codsoft\TASK 5- Face Detection And Recognition\embeddings\obama_embedding.npy", allow_pickle=True)
 george_bush_embeddings = np.load(r"C:\Users\HP\Desktop\Codsoft\TASK 5- Face Detection And Recognition\embeddings\george_bush_embedding.npy", allow_pickle=True)
 
@@ -55,7 +56,7 @@ def recognize_face(image):
         face = image[y:y+h, x:x+w]
         embeddings = get_embeddings(face)
 
-        threshold = 12
+        threshold = 12 # basic threshold level to distinguish matches
         for name, known_emb in known_embeddings.items():
             distance = euclidean_distance(embeddings, known_emb)
             if distance < threshold:
@@ -102,7 +103,7 @@ panel.pack()
 result_label = tk.Label(root, text="", font=("Helvetica", 16))
 result_label.pack()
 
-# Load door images
+# Loading door images
 door_open_img = ImageTk.PhotoImage(Image.open("images/door_opened.jpg").resize((200, 400)))
 door_closed_img = ImageTk.PhotoImage(Image.open("images/door_closed.jpg").resize((200, 400)))
 
