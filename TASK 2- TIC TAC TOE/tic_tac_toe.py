@@ -1,5 +1,5 @@
-# Making A Tic-Tac-Toe Game .
-'''About Of the Game : 
+# Making A Tic-Tac-Toe Game.
+'''About Of the Game: 
 1.The user is Always X while the computer is O
 2. The Game Will be Unbeatable 
 3. GUI with Tkinter
