@@ -36,24 +36,24 @@ No external libraries are required for this project.
 ##  **How to Run the Chatbot**
 
 ### **Step 1: Download the Project Files**
-1. Download or copy the `chatbot_gui.py` file.
+1. Download or copy the `chatbot.py` file.
 2. Save it in your desired folder.
 
 ### **Step 2: Run the Chatbot**
 1. Open **Command Prompt (CMD)** or **Terminal**.
-2. Navigate to the folder where your `chatbot_gui.py` file is saved:
+2. Navigate to the folder where your `chatbot.py` file is saved:
    ```
    cd path/to/your/folder
    ```
 3. Run the following command to launch the GUI:
    ```
-   python chatbot_gui.py
+   python chatbot.py
    ```
 4. The chatbot window will appear, allowing you to chat with the bot.
 
 ---
 
-## 📋 **Code Explanation**
+##  **Code Explanation**
 Here’s a breakdown of the key sections of the code:
 
 ### **1. Importing Libraries**
@@ -113,7 +113,7 @@ This code creates a simple GUI with a text log, entry box, and send button.
 
 ---
 
-## 📦 **Deploying the Chatbot as an Executable**
+##  **Deploying the Chatbot as an Executable**
 You can convert the Python script into a standalone executable using **PyInstaller**.
 
 ### **Step 1: Install PyInstaller**
