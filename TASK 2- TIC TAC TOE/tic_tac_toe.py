@@ -12,17 +12,18 @@
 -  The AI uses Minimax to choose the best possible moves.
 -  It checks all possible outcomes and makes moves that minimize the opponent's chances of winning.
 
+I added Game levels , Easy, Medium and Hard
 5.Check for a Winner
 
 '''
-
+## Importing libraries dependencies
 import tkinter as tk
 from tkinter import messagebox
 import math
 import pygame
 import random
 
-
+## Creating the Class function connecting the sound Effects 
 class TicTacToe:
     def __init__(self):
         # Initialize pygame for sound effects
@@ -47,6 +48,7 @@ class TicTacToe:
         # Adding a Restart button
         tk.Button(self.window, text="Restart", command=self.restart_game).grid(row=3, column=2)
 
+    ## Function to create buttons random moves
     def create_buttons(self):
         for row in range(3):
             for col in range(3):
@@ -55,7 +57,7 @@ class TicTacToe:
                     command=lambda r=row, c=col: self.make_move(r, c)
                 )
                 self.buttons[row][col].grid(row=row, column=col)
-
+## The Function to check a  player move
     def make_move(self, row, col):
         if self.board[row][col] == " " and self.current_player == "X":
             self.play_sound(self.move_sound)
@@ -65,7 +67,7 @@ class TicTacToe:
                 return
             self.current_player = "O"
             self.ai_move()
-
+## The Ai Move
     def ai_move(self):
         if self.difficulty.get() == "Easy":
             move = self.random_move()
@@ -114,7 +116,7 @@ class TicTacToe:
 
     def get_available_moves(self):
         return [(row, col) for row in range(3) for col in range(3) if self.board[row][col] == " "]
-
+## Implementing the unbeatable Ai moves .. available in Hard
     def minimax(self, depth, is_maximizing):
         winner = self.check_winner(return_winner=True)
         if winner == "X":
