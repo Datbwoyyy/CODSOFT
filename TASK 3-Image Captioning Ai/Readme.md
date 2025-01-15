@@ -85,7 +85,7 @@ This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) f
 
 ---
 
-## 💡 Disclaimer
+##  Disclaimer
 
 This project is for **educational purposes only**. The datasets, models, and libraries used are the property of their respective owners. Please ensure compliance with licensing agreements before commercial use.
 
