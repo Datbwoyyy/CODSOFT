@@ -1,14 +1,7 @@
 # CODSOFT
 
 
-# CODSOFT Internship Projects
-
-## Internship Benefits
-- **Completion Certificate**
-- **Placement Support**
-- **Networking Opportunities**
-
----
+## CODSOFT Internship Projects
 
 ## Tasks
 ### Task 1: Chatbot with Rule-Based Responses
