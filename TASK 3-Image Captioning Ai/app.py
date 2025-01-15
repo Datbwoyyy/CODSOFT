@@ -3,7 +3,7 @@ import requests
 from PIL import Image
 from transformers import BlipProcessor, BlipForConditionalGeneration
 
-# Load the processor and model
+# Load the processor and model.
 processor = BlipProcessor.from_pretrained("Salesforce/blip-image-captioning-base")
 model = BlipForConditionalGeneration.from_pretrained("Salesforce/blip-image-captioning-base")
 
